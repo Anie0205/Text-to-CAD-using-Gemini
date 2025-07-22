@@ -1,0 +1,19 @@
+@"
+__pycache__/
+*.pyc
+.env
+
+*.CATPart
+*.stl
+*.CATScript
+
+node_modules/
+dist/
+build/
+
+.vscode/
+.idea/
+venv/
+.DS_Store
+Thumbs.db
+"@ | Out-File -Encoding utf8 .gitignore
