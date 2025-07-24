@@ -6,6 +6,6 @@ const API = axios.create({
 });
 
 export const generateScript = async (size: string, fillet: string) => {
-  const res = await API.post("/generate", { size, fillet });
+  const res = await API.post("/generate-fallback-stl", { size, fillet });
   return res.data;
 };
