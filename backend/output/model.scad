@@ -1,13 +1,19 @@
-$fn=50; // Increase for smoother fillets
+$fn=100; // Increase for smoother curves
 
-module rounded_cube(size, round_radius) {
-  hull() {
-    for (i = [0:1])
-      for (j = [0:1])
-        for (k = [0:1])
-          translate([(i-0.5)*size[0], (j-0.5)*size[1], (k-0.5)*size[2]])
-            sphere(r = round_radius);
+module hexagonal_bolt(diameter, length) {
+  hex_size = diameter / 2 / cos(30); // Calculate side length of hexagon
+  
+  // Bolt head
+  difference() {
+    linear_extrude(height = 2 * hex_size)
+      polygon(points = [[hex_size, 0], [hex_size/2, hex_size * sin(60)], [-hex_size/2, hex_size * sin(60)], [-hex_size, 0], [-hex_size/2, -hex_size * sin(60)], [hex_size/2, -hex_size * sin(60)]]);
+    translate([0,0,-0.1]) cylinder(h=2.1, r=diameter/2); //countersink
   }
+
+  // Bolt shank
+  translate([0, 0, 2 * hex_size])
+    cylinder(h = length - 2 * hex_size, r = diameter / 2);
 }
 
-rounded_cube(size = [30, 30, 30], round_radius = 5);
+
+hexagonal_bolt(10, 30);

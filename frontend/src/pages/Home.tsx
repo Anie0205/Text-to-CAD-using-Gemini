@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { generateScript } from "../api";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Suspense } from "react";
@@ -16,7 +16,7 @@ const STLModel: React.FC<{ url: string }> = ({ url }) => {
 
 const ModelViewer: React.FC<{ modelUrl: string }> = ({ modelUrl }) => {
   return (
-    <div className="w-full h-[500px] border mt-4 rounded shadow">
+    <div className="w-full h-[500px] border border-[#333] mt-4 rounded-xl shadow-md bg-[#111111]">
       <Canvas>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
@@ -36,47 +36,102 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleGenerate = async () => {
+  const generateModel = async () => {
+    if (!prompt) return;
+
     setLoading(true);
     setError("");
-    try {
-      const response = await axios.post("http://localhost:8000/generate-models", {
-        prompt,
-      });
+    setStlUrl("");
 
-      // The backend always serves STL at /render-model
+    try {
+      await generateScript(prompt);
       setStlUrl("http://localhost:8000/render-model");
-    } catch (err) {
-      console.error("Generation failed", err);
-      setError("Failed to generate model. Please try again.");
+    } catch (err: any) {
+      if (err.code === 'ERR_NETWORK') {
+        setError("Cannot connect to backend server. Please ensure the backend is running on port 8000.");
+      } else if (err.response?.status === 500) {
+        setError("Backend processing failed. Please try a simpler prompt.");
+      } else {
+        setError("Something went wrong. Try a simpler prompt.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Text-to-CAD Generator</h1>
-      <div className="flex gap-4 mb-4">
-        <textarea
-          className="flex-1 border p-2 rounded resize-y min-h-[60px]"
-          placeholder="Describe your 3D model..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
-        />
-        <button
-          onClick={handleGenerate}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          disabled={loading}
-        >
-          {loading ? "Generating..." : "Generate"}
-        </button>
+    <div className="flex h-screen bg-gradient-to-r from-zinc-950 via-zinc-900 to-black font-sans">
+  
+      {/* === Left Panel: Prompt Box === */}
+      <div className="w-1/2 flex flex-col justify-center items-center px-12">
+        <div className="w-full max-w-xl bg-zinc-900 p-8 rounded-xl shadow-xl border border-zinc-800">
+          <h1 className="text-4xl font-extrabold mb-6 text-transparent bg-clip-text 
+             bg-gradient-to-r from-purple-400 via-fuchsia-500 to-pink-500 
+             tracking-tight drop-shadow-md animate-fade-in">
+              Text-to-CAD Generator
+            </h1>
+
+          <textarea
+            className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
+                      border border-[#333] rounded-xl px-4 py-3 
+                      focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
+                      transition-all duration-300 shadow-inner resize-y min-h-[100px]"
+            placeholder="Describe your 3D model in natural language..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+          />
+
+          {error && (
+            <p className="text-red-400 text-sm mt-4 bg-red-900/20 p-3 rounded-lg border border-red-500/30">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={generateModel}
+            disabled={loading}
+            className="mt-6 w-full py-3 px-6 text-white font-semibold rounded-full 
+                      bg-gradient-to-r from-purple-600 to-fuchsia-600 
+                      hover:from-fuchsia-600 hover:to-purple-600 
+                      transition-all duration-300 shadow-md hover:shadow-xl 
+                      focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Generating..." : "Generate 3D Model"}
+          </button>
+
+        </div>
       </div>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {stlUrl && <ModelViewer modelUrl={stlUrl} />}
+  
+      {/* === Right Panel: 3D Viewer === */}
+      <div className="w-1/2 flex items-center justify-center">
+        <div className="w-[85%] h-[85%] bg-zinc-900 rounded-2xl border border-zinc-800 shadow-inner flex items-center justify-center">
+          {stlUrl ? (
+            <div className="w-full h-full">
+              <Canvas>
+                <ambientLight intensity={0.5} />
+                <pointLight position={[10, 10, 10]} />
+                <PerspectiveCamera makeDefault position={[0, 0, 100]} />
+                <OrbitControls />
+                <Suspense fallback={null}>
+                  <STLModel url={stlUrl} />
+                </Suspense>
+              </Canvas>
+            </div>
+          ) : (
+            <div className="text-center text-zinc-400">
+              <div className="text-6xl mb-4">🎯</div>
+              <p className="text-xl font-medium">3D Model Preview</p>
+              <p className="text-sm mt-2">Generate a model to see it here</p>
+            </div>
+          )}
+        </div>
+      </div>
+  
     </div>
   );
+  
 };
 
 export default Home;
