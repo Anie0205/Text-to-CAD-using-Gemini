@@ -45,7 +45,7 @@ const Home: React.FC = () => {
 
     try {
       await generateScript(prompt);
-      setStlUrl("http://localhost:8000/render-model");
+      setStlUrl("https://text-to-cad-using-gemini.onrender.com/render-model");
     } catch (err: any) {
       if (err.code === 'ERR_NETWORK') {
         setError("Cannot connect to backend server. Please ensure the backend is running on port 8000.");
