@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { generateScript } from "../api";
+import React, { useState, useEffect } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react"
+import { generateScript, pingBackend } from "../api";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Suspense } from "react";
@@ -36,6 +37,20 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Test backend connection on component mount
+  useEffect(() => {
+    const testBackend = async () => {
+      try {
+        console.log("Testing backend connection...");
+        const result = await pingBackend();
+        console.log("Backend is accessible:", result);
+      } catch (err) {
+        console.error("Backend connection test failed:", err);
+      }
+    };
+    testBackend();
+  }, []);
+
   const generateModel = async () => {
     if (!prompt) return;
 
@@ -44,15 +59,22 @@ const Home: React.FC = () => {
     setStlUrl("");
 
     try {
+      console.log("Sending request to backend...");
       await generateScript(prompt);
+      console.log("Backend request successful, setting STL URL...");
       setStlUrl("https://text-to-cad-using-gemini.onrender.com/render-model");
     } catch (err: any) {
+      console.error("Backend error:", err);
       if (err.code === 'ERR_NETWORK') {
-        setError("Cannot connect to backend server. Please check your internet connection.");
+        setError("Network error: Cannot reach the backend server. Please check if the backend is running.");
       } else if (err.response?.status === 500) {
-        setError("Backend processing failed. Please try a simpler prompt.");
+        setError("Server error: Backend processing failed. Please try a simpler prompt.");
+      } else if (err.response?.status === 404) {
+        setError("Not found: The backend endpoint is not available.");
+      } else if (err.response?.status === 403) {
+        setError("Access denied: CORS issue. Please check backend configuration.");
       } else {
-        setError("Something went wrong. Try a simpler prompt.");
+        setError(`Error: ${err.message || "Something went wrong. Please try again."}`);
       }
     } finally {
       setLoading(false);
