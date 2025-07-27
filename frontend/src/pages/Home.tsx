@@ -48,7 +48,7 @@ const Home: React.FC = () => {
       setStlUrl("https://text-to-cad-using-gemini.onrender.com/render-model");
     } catch (err: any) {
       if (err.code === 'ERR_NETWORK') {
-        setError("Cannot connect to backend server. Please ensure the backend is running on port 8000.");
+        setError("Cannot connect to backend server. Please check your internet connection.");
       } else if (err.response?.status === 500) {
         setError("Backend processing failed. Please try a simpler prompt.");
       } else {
