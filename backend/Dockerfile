@@ -1,8 +1,11 @@
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
-    apt-get install -y openscad python3 python3-pip && \
-    apt-get clean
+    apt-get install -y openscad python3 python3-pip tzdata && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
