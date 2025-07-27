@@ -1,6 +1,8 @@
 import os
+import uuid
 import subprocess
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -80,6 +82,45 @@ def scad_to_stl(scad_path: str, stl_path: str):
 @app.get("/")
 def read_root():
     return {"message": "Text-to-CAD backend running!"}
+
+@app.post("/convert")
+async def convert_scad(request: Request):
+    data = await request.json()
+    scad_code = data.get("code", "")
+    
+    if not scad_code.strip():
+        return JSONResponse({"error": "No SCAD code provided"}, 400)
+    
+    scad_filename = f"temp_{uuid.uuid4()}.scad"
+    stl_filename = scad_filename.replace(".scad", ".stl")
+    
+    try:
+        # Write SCAD file
+        with open(scad_filename, "w") as f:
+            f.write(scad_code)
+
+        # Convert to STL
+        subprocess.run(["openscad", "-o", stl_filename, scad_filename], check=True)
+        
+        # Return the STL file
+        return FileResponse(
+            stl_filename, 
+            media_type="model/stl", 
+            filename=stl_filename
+        )
+        
+    except subprocess.CalledProcessError as e:
+        # Clean up files on error
+        for filename in [scad_filename, stl_filename]:
+            if os.path.exists(filename):
+                os.remove(filename)
+        return JSONResponse({"error": f"OpenSCAD conversion failed: {str(e)}"}, 500)
+    except Exception as e:
+        # Clean up files on error
+        for filename in [scad_filename, stl_filename]:
+            if os.path.exists(filename):
+                os.remove(filename)
+        return JSONResponse({"error": f"Conversion failed: {str(e)}"}, 500)
 
 @app.get("/ping")
 def ping():

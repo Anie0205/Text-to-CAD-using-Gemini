@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SpeedInsights } from "@vercel/speed-insights/react"
-import { generateScript, pingBackend } from "../api";
+import { generateScript, pingBackend, convertScadToStl } from "../api";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Suspense } from "react";
@@ -33,9 +32,11 @@ const ModelViewer: React.FC<{ modelUrl: string }> = ({ modelUrl }) => {
 
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState("");
+  const [scadCode, setScadCode] = useState("");
   const [stlUrl, setStlUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<"prompt" | "scad">("prompt");
 
   // Test backend connection on component mount
   useEffect(() => {
@@ -52,7 +53,8 @@ const Home: React.FC = () => {
   }, []);
 
   const generateModel = async () => {
-    if (!prompt) return;
+    if (mode === "prompt" && !prompt) return;
+    if (mode === "scad" && !scadCode) return;
 
     setLoading(true);
     setError("");
@@ -60,15 +62,24 @@ const Home: React.FC = () => {
 
     try {
       console.log("Sending request to backend...");
-      await generateScript(prompt);
+      
+      if (mode === "prompt") {
+        await generateScript(prompt);
+        // For prompt mode, use the existing render-model endpoint
+        setStlUrl("https://text-to-cad-using-gemini.onrender.com/render-model");
+      } else {
+        // For SCAD mode, get the blob URL directly
+        const blobUrl = await convertScadToStl(scadCode);
+        setStlUrl(blobUrl);
+      }
+      
       console.log("Backend request successful, setting STL URL...");
-      setStlUrl("https://text-to-cad-using-gemini.onrender.com/render-model");
     } catch (err: any) {
       console.error("Backend error:", err);
       if (err.code === 'ERR_NETWORK') {
         setError("Network error: Cannot reach the backend server. Please check if the backend is running.");
       } else if (err.response?.status === 500) {
-        setError("Server error: Backend processing failed. Please try a simpler prompt.");
+        setError("Server error: Backend processing failed. Please try a simpler prompt or check your SCAD code.");
       } else if (err.response?.status === 404) {
         setError("Not found: The backend endpoint is not available.");
       } else if (err.response?.status === 403) {
@@ -84,7 +95,7 @@ const Home: React.FC = () => {
   return (
     <div className="flex h-screen bg-gradient-to-r from-zinc-950 via-zinc-900 to-black font-sans">
   
-      {/* === Left Panel: Prompt Box === */}
+      {/* === Left Panel: Input Box === */}
       <div className="w-1/2 flex flex-col justify-center items-center px-12">
         <div className="w-full max-w-xl bg-zinc-900 p-8 rounded-xl shadow-xl border border-zinc-800">
           <h1 className="text-4xl font-extrabold mb-6 text-transparent bg-clip-text 
@@ -93,16 +104,54 @@ const Home: React.FC = () => {
               Text-to-CAD Generator
             </h1>
 
-          <textarea
-            className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
-                      border border-[#333] rounded-xl px-4 py-3 
-                      focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
-                      transition-all duration-300 shadow-inner resize-y min-h-[100px]"
-            placeholder="Describe your 3D model in natural language..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-          />
+          {/* Mode Toggle */}
+          <div className="flex mb-4 bg-zinc-800 rounded-lg p-1">
+            <button
+              onClick={() => setMode("prompt")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                mode === "prompt" 
+                  ? "bg-purple-600 text-white" 
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Text Prompt
+            </button>
+            <button
+              onClick={() => setMode("scad")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                mode === "scad" 
+                  ? "bg-purple-600 text-white" 
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              SCAD Code
+            </button>
+          </div>
+
+          {mode === "prompt" ? (
+            <textarea
+              className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
+                        border border-[#333] rounded-xl px-4 py-3 
+                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
+                        transition-all duration-300 shadow-inner resize-y min-h-[100px]"
+              placeholder="Describe your 3D model in natural language..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              rows={4}
+            />
+          ) : (
+            <textarea
+              className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
+                        border border-[#333] rounded-xl px-4 py-3 
+                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
+                        transition-all duration-300 shadow-inner resize-y min-h-[100px] font-mono text-sm"
+              placeholder="// Enter your OpenSCAD code here...
+cube([10, 10, 10]);"
+              value={scadCode}
+              onChange={(e) => setScadCode(e.target.value)}
+              rows={6}
+            />
+          )}
 
           {error && (
             <p className="text-red-400 text-sm mt-4 bg-red-900/20 p-3 rounded-lg border border-red-500/30">
@@ -120,7 +169,7 @@ const Home: React.FC = () => {
                       focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2
                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Generating..." : "Generate 3D Model"}
+            {loading ? "Generating..." : mode === "prompt" ? "Generate 3D Model" : "Convert SCAD to STL"}
           </button>
 
         </div>
