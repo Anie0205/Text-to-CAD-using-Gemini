@@ -16,7 +16,7 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["https://text-to-cad-using-gemini.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
