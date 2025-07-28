@@ -1,17 +1,16 @@
-FROM ubuntu:20.04
+FROM python:3.10-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-
+# Install OpenSCAD dependencies
 RUN apt-get update && \
-    apt-get install -y openscad python3 python3-pip && \
-    apt-get clean
+    apt-get install -y openscad && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
 COPY . .
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
