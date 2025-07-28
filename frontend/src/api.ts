@@ -11,6 +11,17 @@ export const generateScript = async (prompt: string) => {
   return res.data;
 };
 
+// Convert SCAD code to STL using the /convert endpoint
+export const convertScadToStl = async (scadCode: string): Promise<string> => {
+  const res = await API.post("/convert", { code: scadCode }, {
+    responseType: 'blob'
+  });
+  
+  // Create a blob URL from the STL file response
+  const blob = new Blob([res.data], { type: 'model/stl' });
+  return URL.createObjectURL(blob);
+};
+
 // Ping endpoint to check server status
 export const pingBackend = async () => {
   const res = await API.get("/ping");
