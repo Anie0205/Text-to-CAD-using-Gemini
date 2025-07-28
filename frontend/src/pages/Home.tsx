@@ -104,54 +104,16 @@ const Home: React.FC = () => {
               Text-to-CAD Generator
             </h1>
 
-          {/* Mode Toggle */}
-          <div className="flex mb-4 bg-zinc-800 rounded-lg p-1">
-            <button
-              onClick={() => setMode("prompt")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                mode === "prompt" 
-                  ? "bg-purple-600 text-white" 
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Text Prompt
-            </button>
-            <button
-              onClick={() => setMode("scad")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                mode === "scad" 
-                  ? "bg-purple-600 text-white" 
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              SCAD Code
-            </button>
-          </div>
-
-          {mode === "prompt" ? (
-            <textarea
-              className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
-                        border border-[#333] rounded-xl px-4 py-3 
-                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
-                        transition-all duration-300 shadow-inner resize-y min-h-[100px]"
-              placeholder="Describe your 3D model in natural language..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              rows={4}
-            />
-          ) : (
-            <textarea
-              className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
-                        border border-[#333] rounded-xl px-4 py-3 
-                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
-                        transition-all duration-300 shadow-inner resize-y min-h-[100px] font-mono text-sm"
-              placeholder="// Enter your OpenSCAD code here...
-cube([10, 10, 10]);"
-              value={scadCode}
-              onChange={(e) => setScadCode(e.target.value)}
-              rows={6}
-            />
-          )}
+          <textarea
+            className="flex-1 w-full bg-[#1A1A1A] text-white placeholder-gray-400 
+                      border border-[#333] rounded-xl px-4 py-3 
+                      focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent 
+                      transition-all duration-300 shadow-inner resize-y min-h-[100px]"
+            placeholder="Describe your 3D model in natural language..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+          />
 
           {error && (
             <p className="text-red-400 text-sm mt-4 bg-red-900/20 p-3 rounded-lg border border-red-500/30">
@@ -169,7 +131,7 @@ cube([10, 10, 10]);"
                       focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2
                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Generating..." : mode === "prompt" ? "Generate 3D Model" : "Convert SCAD to STL"}
+            {loading ? "Generating..." : "Generate 3D Model"}
           </button>
 
         </div>
