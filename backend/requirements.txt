@@ -1,4 +1,4 @@
-﻿annotated-types
+annotated-types
 anyio
 cachetools
 certifi
@@ -6,7 +6,6 @@ charset-normalizer
 click
 colorama
 distro
-dotenv
 fastapi
 google-ai-generativelanguage
 google-api-core
@@ -22,13 +21,11 @@ httpcore
 httplib2
 httpx
 idna
-jiter
 proto-plus
 protobuf
 pyasn1
 pyasn1_modules
 pydantic
-pydantic_core
 pyparsing
 python-dotenv
 python-multipart
@@ -37,7 +34,7 @@ rsa
 sniffio
 starlette
 tqdm
-typing-inspection
+typing-inspect
 typing_extensions
 uritemplate
 urllib3
