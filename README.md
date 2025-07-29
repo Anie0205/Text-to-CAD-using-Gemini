@@ -26,7 +26,8 @@ A lightweight full-stack system that takes natural language input and generates 
 - Optionally converts the output to `.STL` format for 3D printing and simulation.
 
 ---
-
+## Demo
+![Demo](https://raw.githubusercontent.com/Anie0205/Text-to-CAD-using-Gemini/main/demo.gif)
 ---
 
 ## Tech Stack
