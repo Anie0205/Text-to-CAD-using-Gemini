@@ -27,12 +27,6 @@ A lightweight full-stack system that takes natural language input and generates 
 
 ---
 
-## Screenshots
-
-![Prompt Input UI](./screenshots/prompt_ui.png)
-![Generated CAD Code](./screenshots/generated_code.png)
-![3D Model Render](./screenshots/model_render.png)
-
 ---
 
 ## Tech Stack
