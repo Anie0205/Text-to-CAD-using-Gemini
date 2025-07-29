@@ -36,7 +36,7 @@ A lightweight full-stack system that takes natural language input and generates 
 |--------------|--------------------|
 | Frontend     | React, Tailwind CSS, Three.js |
 | Backend      | FastAPI, Python |
-| AI Model     | Google Gemini Pro (via API) |
+| AI Model     | Google Gemini Flash (via API) |
 | CAD Engines  | OpenSCAD (local), CATIA-ready architecture |
 | 3D Format    | `.stl` (currently) |
 | Deployment   | Vercel (frontend), Render (backend) |
@@ -96,22 +96,6 @@ Since CATIA isn't installed locally, **OpenSCAD** was used for easier `.stl` gen
 * Support multiple views (e.g., orthographic, exploded) in the viewer  
 
 ---
-
-🙋‍♀️ FAQ
----------
-
-**Q: Isn't this just an API call + viewer?**  
-**A:** While it may appear simple, the architecture is designed with modularity in mind. This app connects a **natural language interface → code generation → 3D rendering** flow. It lays a scalable foundation for **LLM + CAD automation**, which can be powerful in early-stage prototyping and product design workflows.
-
-**Q: Can I use this for actual 3D printing?**  
-**A:** Yes — the `.stl` output can be used directly in slicer software like Cura or PrusaSlicer. Just ensure the model is watertight and printer-ready.
-
-**Q: What if I install CATIA later?**  
-**A:** The backend is structured to plug in CATIA easily. Once installed, you can:
-
-* Replace OpenSCAD output with `.CATPart`  
-* Use CATIA's API to create parametric, editable models  
-* Continue using the same frontend to interact via text
 
 Author's Note: You can always connect with me via my mail: [Ananya Verma Email](ananya.verma0205@gmail.com)
 
